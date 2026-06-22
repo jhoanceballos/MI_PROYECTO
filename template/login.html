@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso al Sistema</title>
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+<body>
+
+            <div class="container d-flex justify-content-center align-items-center min-vh-100">
+                <div class="row w-100 justify-content-center">
+                    <div class="col-md-5">
+                    
+                        <div id="login-card" class="card shadow p-4 rounded-3">
+                <h2 class="text-center fw-bold mb-4 text-accent">Iniciar Sesión</h2>
+                        
+               {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-danger p-2 small text-center">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+                        
+                <form method="POST" action="">
+                   {% csrf_token %}
+                   <div class="mb-3">
+                        <label for="login-username" class="form-label fw-semibold">Usuario o Correo</label>
+                       <input type="text" class="form-control" id="login-username" name="login_username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="login-password" class="form-label fw-semibold">Contraseña</label>
+                        <input type="password" class="form-control" id="login-password" name="login_password" required>
+                    </div>
+                   <button type="submit" class="btn btn-custom w-100 fw-bold mt-2">Ingresar</button>
+               </form>
+                
+                <div class="text-center mt-4">
+                    <p class="mb-0 small text-muted">¿No tienes una cuenta?</p>
+                    <button type="button" class="btn btn-link btn-sm text-success fw-bold p-0" onclick="mostrarRegistro()">Registrarse</button>
+                </div>
+            </div>
+
+            <div id="register-card" class="card shadow p-4 rounded-3 d-none">
+                <h2 class="text-center fw-bold mb-4 text-accent">Registrarse</h2>
+                <form method="POST" action="">
+                    {% csrf_token %}
+                   <div class="mb-3">
+                        <label for="reg-username" class="form-label fw-semibold">Nombre de Usuario</label>
+                        <input type="text" class="form-control" id="reg-username" name="reg_username" required>
+                    </div>
+                   <div class="mb-3">
+                        <label for="reg-email" class="form-label fw-semibold">Correo Electrónico</label>
+                       <input type="email" class="form-control" id="reg-email" name="reg_email" required>
+                   </div>
+                    <div class="mb-3">
+                       <label for="reg-password" class="form-label fw-semibold">Contraseña</label>
+                        <input type="password" class="form-control" id="reg-password" name="reg_password" required>
+                    </div>
+                    <button type="submit" class="btn btn-custom w-100 fw-bold mt-2">Crear Cuenta</button>
+                </form>
+
+                <div class="text-center mt-4">
+                    <p class="mb-0 small text-muted">¿Ya tienes cuenta?</p>
+                   <button type="button" class="btn btn-link btn-sm text-success fw-bold p-0" onclick="mostrarLogin()">Iniciar Sesión</button>
+               </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const loginCard = document.getElementById('login-card');
+    const registerCard = document.getElementById('register-card');
+
+    function mostrarRegistro() {
+        loginCard.classList.add('d-none');       // Oculta el login
+        registerCard.classList.remove('d-none');  // Muestra el registro
+    }
+
+    function mostrarLogin() {
+        registerCard.classList.add('d-none');   // Oculta el registro
+        loginCard.classList.remove('d-none');    // Muestra el login
+    }
+</script>
+
+<script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>

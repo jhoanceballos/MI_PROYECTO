@@ -1,0 +1,19 @@
+body {
+    background-color: #F5F5DC; /* Beige suave */
+    color: #8B5A2B; /* Marrón tierra */
+}
+.card {
+        background-color: #FFFDD0; /* Crema */
+    border: 1px solid #6B8E23; /* Verde claro */
+}
+.btn-custom {
+        background-color: #228B22; /* Forest Green */
+       color: #FFFDD0;
+    }
+.btn-custom:hover {
+        background-color: #1a6b1a;
+        color: #FFFDD0;
+    }
+.text-accent {
+        color: #228B22;
+}

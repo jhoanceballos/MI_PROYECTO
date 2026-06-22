@@ -1,0 +1,26 @@
+body {
+    background-color: #F5F5DC; /* Beige suave */
+    color: #8B5A2B; /* Marrón tierra */
+}
+.navbar-custom {
+     background-color: #228B22; /* Forest Green */
+ }
+.navbar-custom .navbar-brand, .navbar-custom .nav-link {
+    color: #FFFDD0 !important; /* Crema */
+}
+.jumbotron-custom {
+    background-color: #FFFDD0;
+    border-left: 5px solid #228B22;
+}
+.card {
+    background-color: #FFFDD0;
+    border: 1px solid #6B8E23;
+}
+.btn-custom {
+    background-color: #6B8E23; /* Verde claro */
+    color: #FFFDD0;
+}
+.btn-custom:hover {
+    background-color: #55721c;
+    color: #FFFDD0;
+}

@@ -1,0 +1,38 @@
+services:
+  db:
+    image: mysql:oraclelinux9
+    container_name: mysql_contenedor
+    restart: always
+    environment:
+      MYSQL_DATABASE: db_proyecto
+      MYSQL_ROOT_PASSWORD: clave_secreta_root
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pclave_secreta_root"]
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    container_name: django_contenedor
+    restart: always
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_HOST=db
+      - DB_NAME=db_proyecto
+      - DB_USER=root
+      - DB_PASSWORD=clave_secreta_root
+      - DB_PORT=3306
+
+volumes:
+  mysql_data:

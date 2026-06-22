@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card p-4 shadow-sm text-center" style="background-color: #fbfbe3; border: 1px solid #7cb342; border-radius: 10px; max-width: 400px; margin: auto;">
+        <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px; font-size: 32px; font-weight: bold;">
+            {{ usuario.username|slice:":1"|upper }}
+        </div>
+        
+        <h3 class="fw-bold text-dark mb-0">{{ usuario.username }}</h3>
+        <p class="text-muted small mb-4">{{ usuario.correo }}</p>
+
+        <div class="text-start border-top pt-3">
+            <div class="d-flex justify-content-between mb-2">
+                <span class="fw-bold text-secondary">Rol del Sistema:</span>
+                <span class="text-dark">{{ usuario.rol.nombre|default:"Usuario" }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span class="fw-bold text-secondary">Fecha de Registro:</span>
+                <span class="text-dark">{{ usuario.date_joined|date:"d \d\e F, Y" }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-3">
+                <span class="fw-bold text-secondary">Seguridad:</span>
+                <span class="text-success fw-bold"><i class="bi bi-shield-check"></i> Activo y Protegido</span>
+            </div>
+        </div>
+
+        <button type="button" class="btn btn-success w-100 fw-bold mt-2" data-bs-toggle="modal" data-bs-target="#modalEditarPerfil">
+            Editar Información
+        </button>
+    </div>
+</div>
+
+<div class="modal fade" id="modalEditarPerfil" tabindex="-1" aria-labelledby="modalEditarPerfilLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3 rounded-3">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold text-dark" id="modalEditarPerfilLabel">Modificar Datos Personales</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-alert" class="alert d-none p-2 small text-center"></div>
+
+                <form id="form-editar-perfil">
+                    {% csrf_token %}
+                    
+                    {% for field in form %}
+                    <div class="mb-3 text-start">
+                        <label for="{{ field.id_for_label }}" class="form-label fw-semibold text-secondary">{{ field.label }}</label>
+                        <input type="{{ field.field.widget.input_type|default:'text' }}" 
+                               class="form-control" 
+                               id="{{ field.id_for_label }}" 
+                               name="{{ field.html_name }}" 
+                               value="{{ field.value|default:'' }}" required>
+                        {% if field.errors %}
+                        <div class="text-danger small">{{ field.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    
+                    <button type="submit" class="btn btn-success w-100 fw-bold mt-3">Guardar Cambios</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// --- CAPA DE SEGURIDAD NATIVO: Bloquear el botón de "Atrás" ---
+(function () {
+    window.onpageshow = function (event) {
+        // Detecta si el navegador está jalando la vista desde el historial local.
+        // Si es así, refresca inmediatamente forzando al backend a validar la sesión.
+        if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+            window.location.reload();
+        }
+    };
+})();
+
+// --- CAPA DE PROCESAMIENTO: Envío Asíncrono (AJAX) ---
+document.getElementById('form-editar-perfil').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const alertDiv = document.getElementById('modal-alert');
+
+    fetch("{% url 'editar_perfil' %}", {
+        method: "POST",
+        body: formData,
+        headers: {
+            "X-Requested-With": "XMLHttpRequest"
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alertDiv.className = "alert alert-success p-2 small text-center";
+            alertDiv.textContent = data.message;
+            alertDiv.classList.remove('d-none');
+            
+            // Recarga la interfaz tras un segundo para plasmar los nuevos nombres
+            setTimeout(() => {
+                window.location.reload();
+            }, 1100);
+        } else {
+            alertDiv.className = "alert alert-danger p-2 small text-center";
+            alertDiv.textContent = data.message;
+            alertDiv.classList.remove('d-none');
+        }
+    })
+    .catch(error => {
+        alertDiv.className = "alert alert-danger p-2 small text-center";
+        alertDiv.textContent = "Error de comunicación con el contenedor de Django.";
+        alertDiv.classList.remove('d-none');
+    });
+});
+</script>
+{% endblock %}
