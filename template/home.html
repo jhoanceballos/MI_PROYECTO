@@ -1,30 +1,11 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inicio</title>
-    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/home.css' %}">
-</head>
-<body>
 
-<nav class="navbar navbar-expand-lg navbar-custom shadow-sm mb-4">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="#">🌿 MiProyecto</a>
-        <div class="collapse navbar-collapse justify-content-end">
-            <ul class="navbar-nav">
-                <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Inicio</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'perfil' %}">Perfil</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Cerrar Sesión</a></li>
-            </ul>
-        </div>
-    </div>
-</nav>
+{% block title %}Inicio - Safe Zone{% endblock %}
 
+{% block content %}
 <div class="container">
-    <div class="p-5 mb-4 rounded-3 jumbotron-shadow jumbotron-custom shadow-sm">
+    <div class="p-5 mb-4 rounded-3 shadow-sm" style="background-color: #e8f5e9; border-left: 5px solid #2e7d32;">
         <h1 class="display-5 fw-bold text-success">Bienvenido al Panel de Control</h1>
         <p class="col-md-8 fs-5 mt-3">Esta es la página principal de la aplicación. Desde aquí se puede navegar a las diferentes secciones utilizando la barra superior.</p>
     </div>
@@ -32,21 +13,18 @@
     <div class="row">
         <div class="col-md-4 mb-3">
             <div class="card p-3 shadow-sm">
-                <h4 class="fw-bold">Gestión</h4>
-                <p>Administración de registros y datos del sistema.</p>
-                <a href="#" class="btn btn-custom mt-2">Explorar</a>
+                <h4 class="fw-bold text-dark">Gestión</h4>
+                <p class="text-muted">Administración de registros y datos del sistema.</p>
+                <a href="#" class="btn btn-outline-success mt-2">Explorar</a>
             </div>
         </div>
         <div class="col-md-4 mb-3">
             <div class="card p-3 shadow-sm">
-                <h4 class="fw-bold">Reportes</h4>
-                <p>Visualización de métricas generales.</p>
-                <a href="#" class="btn btn-custom mt-2">Ver más</a>
+                <h4 class="fw-bold text-dark">Reportes</h4>
+                <p class="text-muted">Visualización de métricas generales.</p>
+                <a href="#" class="btn btn-outline-success mt-2">Ver más</a>
             </div>
         </div>
     </div>
 </div>
-
-<script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-</body>
-</html>
+{% endblock %}
