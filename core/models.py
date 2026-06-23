@@ -1,20 +1,29 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
+# ==========================================
+# # SECCIÓN: ESTRUCTURA DE ROLES (BASE DE DATOS)
+# ==========================================
 class Rol(models.Model):
-    """Tabla para almacenar los roles del sistema (Admin, Cliente, etc.)"""
-    nombre = models.CharField(max_length=50, unique=True)
+    # 📝 Corrección: Se cambió 'max_index=True' por 'db_index=True'
+    nombre = models.CharField(db_index=True, max_length=50, unique=True)
 
     def __str__(self):
         return self.nombre
 
-class Usuario(models.Model):
-    """Tabla personalizada para la gestión de usuarios"""
-    username = models.CharField(max_length=50, unique=True)
-    correo = models.EmailField(max_length=100, unique=True)
-    password = models.CharField(max_length=255)  # Guardará la contraseña encriptada
-    fecha_registro = models.DateTimeField(auto_now_add=True)
-    estado = models.BooleanField(default=True)  # True = Activo, False = Inactivo
-    rol = models.ForeignKey(Rol, on_delete=models.PROTECT)  # <-- AQUÍ SE CORRIGIÓ
+# ==========================================
+# # SECCIÓN: BASE DE DATOS DE USUARIOS
+# ==========================================
+class Usuario(AbstractUser):
+    """
+    Modelo personalizado que extiende de AbstractUser para heredar la 
+    infraestructura nativa de autenticación y encriptación de Django.
+    """
+    correo = models.EmailField(unique=True)
+    rol = models.ForeignKey(Rol, on_delete=models.SET_NULL, null=True, blank=True)
+
+    # El correo se añade como campo requerido alternativo al crear superusuarios
+    REQUIRED_FIELDS = ['correo']
 
     def __str__(self):
         return self.username

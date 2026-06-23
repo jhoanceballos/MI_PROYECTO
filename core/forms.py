@@ -2,10 +2,15 @@ from django import forms
 from .models import Usuario
 
 # ==========================================
-# SECCIÓN: FORMULARIO DE REGISTRO DE USUARIOS
+# SECCIÓN: BASE DE DATOS Y CONEXIÓN DE MODELOS
+# ==========================================
+# En esta sección mapeamos la estructura de los formularios directamente con 
+# nuestro modelo personalizado de base de datos 'Usuario'.
+
+# ==========================================
+# SECCIÓN: FORMULARIO DE REGISTRO
 # ==========================================
 class RegisterForm(forms.ModelForm):
-    # Campo de contraseña explícito para usar el widget adecuado en la interfaz
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Contraseña'}),
         label="Contraseña"
@@ -13,8 +18,7 @@ class RegisterForm(forms.ModelForm):
 
     class Meta:
         model = Usuario
-        # 🛡️ SEGURIDAD: Solo permitimos estos tres campos. El rol se quita de aquí
-        # para evitar que usuarios maliciosos se asignen el rol de Administrador.
+        # 🛡️ Solo exponemos campos públicos seguros. El rol se quita para asignarse automáticamente por detrás.
         fields = ['username', 'correo', 'password']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de Usuario'}),
@@ -22,7 +26,7 @@ class RegisterForm(forms.ModelForm):
         }
 
 # ==========================================
-# SECCIÓN: FORMULARIO DE INICIO DE SESIÓN
+# SECCIÓN: FORMULARIO DE LOGIN
 # ==========================================
 class LoginForm(forms.Form):
     username = forms.CharField(
@@ -33,3 +37,16 @@ class LoginForm(forms.Form):
         widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Contraseña'}),
         label="Contraseña"
     )
+
+# ==========================================
+# SECCIÓN: FORMULARIO DE PERFIL DE USUARIO
+# ==========================================
+class UserEditForm(forms.ModelForm):
+    """ Formulario encargado de permitir al usuario actualizar sus datos desde su perfil """
+    class Meta:
+        model = Usuario
+        fields = ['username', 'correo']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'correo': forms.EmailInput(attrs={'class': 'form-control'}),
+        }
