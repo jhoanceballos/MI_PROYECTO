@@ -1,6 +1,9 @@
 from django import forms
 from .models import Usuario
-
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from core.forms import EditarPerfilForm
 # ==========================================
 # SECCIÓN: BASE DE DATOS Y CONEXIÓN DE MODELOS
 # ==========================================
@@ -49,4 +52,19 @@ class UserEditForm(forms.ModelForm):
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'correo': forms.EmailInput(attrs={'class': 'form-control'}),
+        }
+# ==========================================
+# # SECCIÓN: FORMULARIOS DE PERFIL DE USUARIO
+# ==========================================
+
+class EditarPerfilForm(forms.ModelForm):
+    """ Formulario para la actualización de datos personales en el perfil """
+    class Meta:
+        model = Usuario
+        fields = ['first_name', 'last_name', 'email', 'foto_perfil']
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control border-2', 'placeholder': 'Tu nombre'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control border-2', 'placeholder': 'Tu apellido'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control border-2', 'placeholder': 'correo@ejemplo.com'}),
+            'foto_perfil': forms.FileInput(attrs={'class': 'form-control border-2'}),
         }
