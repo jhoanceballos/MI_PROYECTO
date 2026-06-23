@@ -1,81 +1,112 @@
-{% extends 'base.html' %}
 {% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso al Sistema</title>
+    
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+<body>
 
-{% block title %}Acceso al Sistema - Safe Zone{% endblock %}
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="row w-100 justify-content-center">
+        <div class="col-md-5">
 
-{% block content %}
-<div class="row justify-content-center align-items-center" style="min-height: 75vh;">
-    <div class="col-md-5">
-        
-        <div id="login-card" class="card shadow p-4 rounded-3">
-            <h2 class="text-center fw-bold mb-4 text-success">Iniciar Sesión</h2>
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-danger p-2 small text-center shadow-sm mb-3">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+
+            <div id="login-card" class="card shadow p-4 rounded-3">
+                <h2 class="text-center fw-bold mb-4 text-accent">Iniciar Sesión</h2>
+                
+                <form method="POST" action="{% url 'login' %}">
+                    {% csrf_token %}
                     
-            <form method="POST" action="{% url 'login' %}">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label for="login-username" class="form-label fw-semibold text-secondary">Usuario o Correo</label>
-                    <input type="text" class="form-control" id="login-username" name="username" required>
+                    <div class="mb-3">
+                        <label for="login-username" class="form-label fw-semibold">Usuario o Correo</label>
+                        <input type="text" class="form-control" id="login-username" name="username" placeholder="Ingresa tu usuario o correo" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="login-password" class="form-label fw-semibold">Contraseña</label>
+                        <input type="password" class="form-control" id="login-password" name="password" placeholder="••••••••" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-custom w-100 fw-bold mt-2">Ingresar</button>
+                </form>
+
+                <div class="text-center mt-4">
+                    <p class="mb-0 small text-muted">¿No tienes una cuenta aún?</p>
+                    <button type="button" class="btn btn-link btn-sm text-success fw-bold p-0" onclick="mostrarRegistro()">Regístrate aquí</button>
                 </div>
-                <div class="mb-3">
-                    <label for="login-password" class="form-label fw-semibold text-secondary">Contraseña</label>
-                    <input type="password" class="form-control" id="login-password" name="password" required>
-                </div>
-                <button type="submit" class="btn btn-success w-100 fw-bold mt-2">Ingresar</button>
-            </form>
-            
-            <div class="text-center mt-4">
-                <p class="mb-0 small text-muted">¿No tienes una cuenta?</p>
-                <button type="button" class="btn btn-link btn-sm text-success fw-bold p-0" onclick="mostrarRegistro()">Registrarse</button>
             </div>
-        </div>
 
-        <div id="register-card" class="card shadow p-4 rounded-3 d-none">
-            <h2 class="text-center fw-bold mb-4 text-success">Registrarse</h2>
-            <form method="POST" action="{% url 'register' %}">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label for="reg-username" class="form-label fw-semibold text-secondary">Nombre de Usuario</label>
-                    <input type="text" class="form-control" id="reg-username" name="username" required>
-                </div>
-                <div class="mb-3">
-                    <label for="reg-email" class="form-label fw-semibold text-secondary">Correo Electrónico</label>
-                    <input type="email" class="form-control" id="reg-email" name="correo" required>
-                </div>
-                <div class="mb-3">
-                    <label for="reg-password" class="form-label fw-semibold text-secondary">Contraseña</label>
-                    <input type="password" class="form-control" id="reg-password" name="password" required>
-                </div>
-                <div class="mb-3">
-                    <label for="reg-rol" class="form-label fw-semibold text-secondary">Rol del Sistema</label>
-                    <select class="form-select" id="reg-rol" name="rol" required>
-                        <option value="1">Usuario Común</option>
-                        <option value="2">Administrador</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-success w-100 fw-bold mt-2">Crear Cuenta</button>
-            </form>
 
-            <div class="text-center mt-4">
-                <p class="mb-0 small text-muted">¿Ya tienes cuenta?</p>
-                <button type="button" class="btn btn-link btn-sm text-success fw-bold p-0" onclick="mostrarLogin()">Iniciar Sesión</button>
+            <div id="register-card" class="card shadow p-4 rounded-3 d-none">
+                <h2 class="text-center fw-bold mb-4 text-accent">Crear Cuenta</h2>
+                
+                <form method="POST" action="{% url 'register' %}">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="reg-username" class="form-label fw-semibold">Nombre de Usuario</label>
+                        <input type="text" class="form-control" id="reg-username" name="username" placeholder="Ej. jhoan_dev" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="reg-email" class="form-label fw-semibold">Correo Electrónico</label>
+                        <input type="email" class="form-control" id="reg-email" name="correo" placeholder="correo@ejemplo.com" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="reg-password" class="form-label fw-semibold">Contraseña</label>
+                        <input type="password" class="form-control" id="reg-password" name="password" placeholder="Crea una contraseña segura" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-custom w-100 fw-bold mt-2">Registrarme</button>
+                </form>
+
+                <div class="text-center mt-4">
+                    <p class="mb-0 small text-muted">¿Ya tienes cuenta?</p>
+                    <button type="button" class="btn btn-link btn-sm text-success fw-bold p-0" onclick="mostrarLogin()">Iniciar Sesión</button>
+                </div>
             </div>
-        </div>
 
+        </div>
     </div>
 </div>
 
+
 <script>
+    // Referencias globales a los contenedores de las tarjetas
     const loginCard = document.getElementById('login-card');
     const registerCard = document.getElementById('register-card');
 
+    /**
+     * Oculta la vista de Inicio de Sesión y despliega el formulario de Registro
+     */
     function mostrarRegistro() {
         loginCard.classList.add('d-none');
         registerCard.classList.remove('d-none');
     }
 
+    /**
+     * Oculta la vista de Registro y despliega el formulario de Inicio de Sesión
+     */
     function mostrarLogin() {
         registerCard.classList.add('d-none');
         loginCard.classList.remove('d-none');
     }
 </script>
-{% endblock %}
+
+<script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>
