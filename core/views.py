@@ -94,6 +94,44 @@ def register_view(request):
         form = RegisterForm()
     return render(request, 'login.html', {'form': form})
 
+## ==========================================
+# # SECCIÓN: INTERFAZ / VISTAS DE ADMINISTRACIÓN
+# ==========================================
+
+@login_required(login_url='login')
+@never_cache
+def admin_panel_view(request):
+    """ Despliega el panel de control y procesa la actualización de roles en sitio """
+    
+    # Capa de Seguridad Backend: Si el usuario no tiene rol o no es Administrador, rebota a Home
+    if not request.user.rol or request.user.rol.nombre != 'Administrador':
+        messages.error(request, "Acceso denegado: No cuenta con permisos administrativos.")
+        return redirect('home')
+
+    # Procesar la actualización del rol (Petición POST desde el modal)
+    if request.method == 'POST':
+        usuario_id = request.POST.get('usuario_id')
+        rol_id = request.POST.get('rol_id')
+        
+        usuario_editar = get_object_or_404(Usuario, id=usuario_id)
+        nuevo_rol = get_object_or_404(Rol, id=rol_id)
+        
+        usuario_editar.rol = nuevo_rol
+        usuario_editar.save()
+        
+        messages.success(request, f"El rol de {usuario_editar.username} ha sido actualizado a {nuevo_rol.nombre}.")
+        return redirect('admin_panel')
+        
+    # Extracción de datos para la tabla y los formularios modales
+    usuarios_sistema = Usuario.objects.all().select_related('rol').order_by('id')
+    roles_sistema = Rol.objects.all()
+    
+    context = {
+        'usuarios': usuarios_sistema,
+        'roles': roles_sistema
+    }
+    
+    return render(request, 'admin_panel.html', context)
 # ==========================================
 # SECCIÓN: FORMULARIO DE PERFIL DE USUARIO
 # ==========================================

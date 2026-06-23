@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- ========================================== -->
+    <!-- # SECCIÓN: ENCABEZADO Y TÍTULO DEL PANEL   -->
+    <!-- ========================================== -->
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <h2 class="fw-bold text-dark m-0">🛠️ Panel de Control Administrativo</h2>
+            <p class="text-muted m-0">Gestión centralizada de usuarios y roles del sistema SafeZone</p>
+        </div>
+        <div class="col-auto d-flex gap-2">
+            <a href="{% url 'home' %}" class="btn btn-outline-secondary shadow-sm d-flex align-items-center gap-1">
+                ⬅️ Volver a Inicio
+            </a>
+            <span class="badge bg-primary px-3 py-2 fs-6 d-flex align-items-center">
+                Total Usuarios: {{ usuarios|length }}
+            </span>
+        </div>
+    </div>
+
+    <hr class="mb-4">
+
+    <!-- Mensajes de Alerta del Sistema -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- ========================================== -->
+    <!-- # SECCIÓN: TABLA PRINCIPAL DE USUARIOS     -->
+    <!-- ========================================== -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle m-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th scope="col" class="ps-4">ID</th>
+                            <th scope="col">Usuario (Username)</th>
+                            <th scope="col">Nombre Completo</th>
+                            <th scope="col">Correo Electrónico</th>
+                            <th scope="col">Rol Asignado</th>
+                            <th scope="col">Estado</th>
+                            <th scope="col" class="text-end pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario in usuarios %}
+                        <tr>
+                            <td class="fw-bold text-secondary ps-4">#{{ usuario.id }}</td>
+                            <td><span class="fw-semibold text-primary">{{ usuario.username }}</span></td>
+                            <td>
+                                {% if usuario.first_name or usuario.last_name %}
+                                    {{ usuario.first_name }} {{ usuario.last_name }}
+                                {% else %}
+                                    <span class="text-muted italic small">Sin registrar</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ usuario.email|default:"—" }}</td>
+                            <td>
+                                {% if usuario.rol.nombre == 'Administrador' %}
+                                    <span class="badge bg-danger px-2.5 py-1.5 text-uppercase fs-7 shadow-sm">🛡️ {{ usuario.rol.nombre }}</span>
+                                {% elif usuario.rol.nombre == 'Usuario Común' %}
+                                    <span class="badge bg-info text-dark px-2.5 py-1.5 text-uppercase fs-7">👤 {{ usuario.rol.nombre }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary px-2.5 py-1.5 text-uppercase fs-7">{{ usuario.rol.nombre|default:"Sin Rol" }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if usuario.is_active %}
+                                    <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-2">Activo</span>
+                                {% else %}
+                                    <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-2">Inactivo</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-4">
+                                <!-- Botón que despliega el Modal de edición en sitio -->
+                                <button type="button" class="btn btn-sm btn-dark shadow-sm" data-bs-toggle="modal" data-bs-target="#modalEditarRol{{ usuario.id }}">
+                                    ✏️ Editar Rol
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- ========================================== -->
+                        <!-- # DIÁLOGO MODAL: MODIFICAR ROL EN SITIO    -->
+                        <!-- ========================================== -->
+                        <div class="modal fade" id="modalEditarRol{{ usuario.id }}" taxpayer="dialog" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border-0 shadow">
+                                    <div class="modal-header bg-dark text-white">
+                                        <h5 class="modal-title fw-bold">Actualizar Rol de Usuario</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <form method="POST" action="{% url 'admin_panel' %}">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <p class="text-muted">Modifica los privilegios de acceso para la cuenta del sistema:</p>
+                                            
+                                            <div class="mb-3 bg-light p-3 rounded">
+                                                <div class="small text-secondary">Usuario seleccionado:</div>
+                                                <div class="fw-bold text-dark fs-5">{{ usuario.username }}</div>
+                                                <div class="small text-muted">{{ usuario.email|default:"Sin correo electrónico asignado" }}</div>
+                                            </div>
+
+                                            <input type="hidden" name="usuario_id" value="{{ usuario.id }}">
+                                            
+                                            <div class="mb-3">
+                                                <label for="rol_id_{{ usuario.id }}" class="form-label fw-bold text-secondary">Asignar Nuevo Rol:</label>
+                                                <select class="form-select border-2" id="rol_id_{{ usuario.id }}" name="rol_id" required>
+                                                    {% for rol in roles %}
+                                                        <option value="{{ rol.id }}" {% if usuario.rol.id == rol.id %}selected{% endif %}>
+                                                            {{ rol.nombre }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer bg-light border-top-0">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="submit" class="btn btn-primary fw-semibold px-4 shadow-sm">Guardar Cambios</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- FIN DIÁLOGO MODAL -->
+
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <p class="fs-5 m-0">🚫 No se encontraron usuarios registrados en el sistema.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

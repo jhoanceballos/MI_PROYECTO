@@ -4,32 +4,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Mi Proyecto{% endblock %}</title>
-    <!-- Bootstrap CSS (Usando la carpeta local que tienes en tu static) -->
+    <title>{% block title %}Safe Zone{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
-    <!-- Tu archivo personalizado de estilos -->
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
 </head>
 <body>
 
-    <!-- Barra de Navegación -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
         <div class="container-fluid">
-            <a class="navbar-brand font-weight-bold" href="{% url 'home' %}">Safe Zone</a>
+            <a class="navbar-brand fw-bold" href="{% url 'home' %}">Safe Zone</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
+            
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     {% if user.is_authenticated %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'home' %}">Inicio</a>
                         </li>
+                        
+                        {% if user.rol and user.rol.nombre == 'Administrador' %}
+                            <li class="nav-item">
+                                <a class="nav-link text-warning fw-bold" href="{% url 'admin_panel' %}">Panel de Control</a>
+                            </li>
+                        {% endif %}
+
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'perfil' %}">Mi Perfil</a>
                         </li>
+                        
                         <li class="nav-item ms-2">
-                            <!-- Formulario seguro para cerrar sesión -->
                             <form action="{% url 'logout' %}" method="post" class="d-inline">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-outline-danger btn-sm">Cerrar Sesión</button>
@@ -48,7 +53,6 @@
         </div>
     </nav>
 
-    <!-- Contenedor de Mensajes Alerta (Django Messages) -->
     <div class="container mt-3">
         {% if messages %}
             {% for message in messages %}
@@ -60,13 +64,11 @@
         {% endif %}
     </div>
 
-    <!-- Contenido Dinámico de las Páginas -->
     <main class="container my-4">
         {% block content %}
         {% endblock %}
     </main>
 
-    <!-- Bootstrap JS Personalizado o desde tu static -->
     <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
