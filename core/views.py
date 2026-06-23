@@ -1,19 +1,15 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
 from django.http import JsonResponse, HttpResponseForbidden
-from .forms import RegisterForm, LoginForm, UserEditForm
+
 from .models import Usuario, Rol
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.cache import never_cache
-from django.contrib import messages
-from core.models import Usuario, Rol
+from .forms import RegisterForm, LoginForm, UserEditForm, EditarPerfilForm
 
 # ==========================================
-# SECCIÓN: BASE DE DATOS Y CONEXIÓN DE MODELOS
+# # SECCIÓN: DECORADORES Y CONTROL DE ACCESO
 # ==========================================
 def admin_required(view_func):
     """ Valida a nivel de Base de Datos si el rol asociado cuenta con privilegios administrativos """
@@ -29,7 +25,7 @@ def inicio(request):
     return redirect('login')
 
 # ==========================================
-# SECCIÓN: FORMULARIO DE LOGIN
+# # SECCIÓN: AUTENTICACIÓN Y REGISTRO
 # ==========================================
 def login_view(request):
     if request.user.is_authenticated:
@@ -66,9 +62,6 @@ def logout_view(request):
     auth_logout(request)
     return redirect('login')
 
-# ==========================================
-# SECCIÓN: FORMULARIO DE REGISTRO
-# ==========================================
 def register_view(request):
     if request.user.is_authenticated:
         return redirect('home')
@@ -80,7 +73,6 @@ def register_view(request):
             correo = form.cleaned_data.get('correo')
             password = form.cleaned_data.get('password')
             
-            # Asignación automática segura consultando la entidad Rol
             rol_por_defecto, created = Rol.objects.get_or_create(nombre='Usuario Común')
             
             user = Usuario(
@@ -99,21 +91,17 @@ def register_view(request):
         form = RegisterForm()
     return render(request, 'login.html', {'form': form})
 
-## ==========================================
-# # SECCIÓN: INTERFAZ / VISTAS DE ADMINISTRACIÓN
 # ==========================================
-
+# # SECCIÓN: SISTEMA DE CONTROL / PANEL ADMIN
+# ==========================================
 @login_required(login_url='login')
 @never_cache
 def admin_panel_view(request):
-    """ Despliega el panel de control y procesa la actualización de roles en sitio """
-    
-    # Capa de Seguridad Backend: Si el usuario no tiene rol o no es Administrador, rebota a Home
+    """ Despliega el panel de control y procesa la actualización de roles """
     if not request.user.rol or request.user.rol.nombre != 'Administrador':
         messages.error(request, "Acceso denegado: No cuenta con permisos administrativos.")
         return redirect('home')
 
-    # Procesar la actualización del rol (Petición POST desde el modal)
     if request.method == 'POST':
         usuario_id = request.POST.get('usuario_id')
         rol_id = request.POST.get('rol_id')
@@ -127,7 +115,6 @@ def admin_panel_view(request):
         messages.success(request, f"El rol de {usuario_editar.username} ha sido actualizado a {nuevo_rol.nombre}.")
         return redirect('admin_panel')
         
-    # Extracción de datos para la tabla y los formularios modales
     usuarios_sistema = Usuario.objects.all().select_related('rol').order_by('id')
     roles_sistema = Rol.objects.all()
     
@@ -135,10 +122,10 @@ def admin_panel_view(request):
         'usuarios': usuarios_sistema,
         'roles': roles_sistema
     }
-    
     return render(request, 'admin_panel.html', context)
+
 # ==========================================
-# SECCIÓN: FORMULARIO DE PERFIL DE USUARIO
+# # SECCIÓN: VISTAS DE USUARIO Y PERFIL
 # ==========================================
 @login_required(login_url='login')
 @never_cache
@@ -146,15 +133,29 @@ def home(request):
     return render(request, 'home.html')
 
 @login_required(login_url='login')
-@never_cache
 def perfil_view(request):
-    usuario_actual = request.user
-    form = UserEditForm(instance=usuario_actual)
-    return render(request, 'perfil.html', {'usuario': usuario_actual, 'form': form})
+    """ Muestra el perfil actual y procesa la actualización de datos con subida de archivos """
+    usuario = request.user
+    
+    if request.method == 'POST':
+        form = EditarPerfilForm(request.POST, request.FILES, instance=usuario)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "¡Tu perfil ha sido actualizado con éxito!")
+            return redirect('perfil')
+    else:
+        form = EditarPerfilForm(instance=usuario)
+        
+    context = {
+        'form': form,
+        'usuario': usuario
+    }
+    return render(request, 'perfil.html', context)
 
 @login_required(login_url='login')
 @never_cache
 def editar_perfil_view(request):
+    """ Endpoint asíncrono secundario para actualizaciones rápidas vía AJAX """
     if request.method == "POST" and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         form = UserEditForm(request.POST, instance=request.user)
         if form.is_valid():

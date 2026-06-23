@@ -1,37 +1,23 @@
 from django import forms
 from .models import Usuario
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from core.forms import EditarPerfilForm
-# ==========================================
-# SECCIÓN: BASE DE DATOS Y CONEXIÓN DE MODELOS
-# ==========================================
-# En esta sección mapeamos la estructura de los formularios directamente con 
-# nuestro modelo personalizado de base de datos 'Usuario'.
 
 # ==========================================
-# SECCIÓN: FORMULARIO DE REGISTRO
+# # SECCIÓN: FORMULARIOS DEL SISTEMA SAFEZONE
 # ==========================================
+
 class RegisterForm(forms.ModelForm):
-    password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Contraseña'}),
-        label="Contraseña"
-    )
-
+    """ Formulario base para el registro de nuevos usuarios """
     class Meta:
         model = Usuario
-        # 🛡️ Solo exponemos campos públicos seguros. El rol se quita para asignarse automáticamente por detrás.
-        fields = ['username', 'correo', 'password']
+        fields = ['username', 'password', 'email']
         widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de Usuario'}),
-            'correo': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Correo Electrónico'}),
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'password': forms.PasswordInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
         }
 
-# ==========================================
-# SECCIÓN: FORMULARIO DE LOGIN
-# ==========================================
 class LoginForm(forms.Form):
+    """ Formulario para la autenticación de usuarios """
     username = forms.CharField(
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Usuario o Correo'}),
         label="Usuario o Correo"
@@ -41,24 +27,18 @@ class LoginForm(forms.Form):
         label="Contraseña"
     )
 
-# ==========================================
-# SECCIÓN: FORMULARIO DE PERFIL DE USUARIO
-# ==========================================
 class UserEditForm(forms.ModelForm):
-    """ Formulario encargado de permitir al usuario actualizar sus datos desde su perfil """
+    """ Formulario genérico de edición rápida """
     class Meta:
         model = Usuario
-        fields = ['username', 'correo']
+        fields = ['username', 'email']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
-            'correo': forms.EmailInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
         }
-# ==========================================
-# # SECCIÓN: FORMULARIOS DE PERFIL DE USUARIO
-# ==========================================
 
 class EditarPerfilForm(forms.ModelForm):
-    """ Formulario para la actualización de datos personales en el perfil """
+    """ Formulario completo para actualizar nombres, apellidos, correo y foto """
     class Meta:
         model = Usuario
         fields = ['first_name', 'last_name', 'email', 'foto_perfil']
