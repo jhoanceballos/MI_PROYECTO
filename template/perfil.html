@@ -2,15 +2,6 @@
 
 {% block content %}
 <div class="container mt-5">
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        {% endfor %}
-    {% endif %}
-
     <div class="row">
         <div class="col-md-4 mb-4">
             <div class="card shadow-sm border-0 text-center p-4">
@@ -24,7 +15,7 @@
                     {% endif %}
                 </div>
                 <h4 class="fw-bold text-dark m-0">{{ usuario.username }}</h4>
-                <p class="text-muted small mb-2">{{ usuario.email|default:"Sin correo asignado" }}</p>
+                <p class="text-muted small mb-2">{{ usuario.correo|default:"Sin correo asignado" }}</p>
                 <span class="badge bg-primary px-3 py-1.5 text-uppercase">
                     {{ usuario.rol.nombre|default:"Usuario" }}
                 </span>
@@ -52,7 +43,7 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold text-secondary">Dirección de Correo Electrónico</label>
-                        {{ form.email }}
+                        {{ form.correo }}
                     </div>
 
                     <div class="mb-4">

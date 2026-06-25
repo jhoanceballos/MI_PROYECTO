@@ -21,6 +21,7 @@ class Usuario(AbstractUser):
     """
     correo = models.EmailField(unique=True)
     rol = models.ForeignKey(Rol, on_delete=models.SET_NULL, null=True, blank=True)
+    foto_perfil = models.ImageField(upload_to='perfiles/', null=True, blank=True)
 
     # El correo se añade como campo requerido alternativo al crear superusuarios
     REQUIRED_FIELDS = ['correo']

@@ -6,13 +6,13 @@ from django.views.decorators.cache import never_cache
 from django.http import JsonResponse, HttpResponseForbidden
 
 from .models import Usuario, Rol
-from .forms import RegisterForm, LoginForm, UserEditForm, EditarPerfilForm
+from .forms import RegisterForm, LoginForm, EditarPerfilForm
 
 # ==========================================
-# # SECCIÓN: DECORADORES Y CONTROL DE ACCESO
+# SECCIÓN: DECORADORES Y CAPAS DE SEGURIDAD
 # ==========================================
 def admin_required(view_func):
-    """ Valida a nivel de Base de Datos si el rol asociado cuenta con privilegios administrativos """
+    """ Valida si el usuario autenticado cuenta con el rol específico de Administrador """
     def _wrapped_view_func(request, *args, **kwargs):
         if request.user.is_authenticated and request.user.rol and request.user.rol.nombre == 'Administrador':
             return view_func(request, *args, **kwargs)
@@ -20,14 +20,16 @@ def admin_required(view_func):
     return _wrapped_view_func
 
 def inicio(request):
+    """ Enrutador inicial del ecosistema """
     if request.user.is_authenticated:
         return redirect('home')
     return redirect('login')
 
 # ==========================================
-# # SECCIÓN: AUTENTICACIÓN Y REGISTRO
+# SECCIÓN: GESTIÓN DE SESIONES (AUTENTICACIÓN)
 # ==========================================
 def login_view(request):
+    """ Procesa el ingreso formal al sistema validando credenciales """
     if request.user.is_authenticated:
         return redirect('home')
         
@@ -59,10 +61,15 @@ def login_view(request):
     return render(request, 'login.html', {'form': form})
 
 def logout_view(request):
+    """ Cierra la sesión activa de forma segura """
     auth_logout(request)
     return redirect('login')
 
+# ==========================================
+# SECCIÓN: GESTIÓN DE REGISTRO DE USUARIOS
+# ==========================================
 def register_view(request):
+    """ Maneja el registro asertivo insertando el rol base de forma automática """
     if request.user.is_authenticated:
         return redirect('home')
         
@@ -73,6 +80,7 @@ def register_view(request):
             correo = form.cleaned_data.get('correo')
             password = form.cleaned_data.get('password')
             
+            # Garantiza la existencia del rol por defecto en la base de datos
             rol_por_defecto, created = Rol.objects.get_or_create(nombre='Usuario Común')
             
             user = Usuario(
@@ -92,16 +100,13 @@ def register_view(request):
     return render(request, 'login.html', {'form': form})
 
 # ==========================================
-# # SECCIÓN: SISTEMA DE CONTROL / PANEL ADMIN
+# SECCIÓN: PANEL DE ADMINISTRACIÓN
 # ==========================================
 @login_required(login_url='login')
 @never_cache
+@admin_required
 def admin_panel_view(request):
-    """ Despliega el panel de control y procesa la actualización de roles """
-    if not request.user.rol or request.user.rol.nombre != 'Administrador':
-        messages.error(request, "Acceso denegado: No cuenta con permisos administrativos.")
-        return redirect('home')
-
+    """ Despliega las herramientas administrativas para gestión de roles """
     if request.method == 'POST':
         usuario_id = request.POST.get('usuario_id')
         rol_id = request.POST.get('rol_id')
@@ -112,7 +117,7 @@ def admin_panel_view(request):
         usuario_editar.rol = nuevo_rol
         usuario_editar.save()
         
-        messages.success(request, f"El rol de {usuario_editar.username} ha sido actualizado a {nuevo_rol.nombre}.")
+        messages.success(request, f"El rol de {usuario_editar.username} ha sido cambiado a {nuevo_rol.nombre}.")
         return redirect('admin_panel')
         
     usuarios_sistema = Usuario.objects.all().select_related('rol').order_by('id')
@@ -125,16 +130,17 @@ def admin_panel_view(request):
     return render(request, 'admin_panel.html', context)
 
 # ==========================================
-# # SECCIÓN: VISTAS DE USUARIO Y PERFIL
+# SECCIÓN: VISTAS DEL PERFIL Y NAVEGACIÓN
 # ==========================================
 @login_required(login_url='login')
 @never_cache
 def home(request):
+    """ Vista principal tras la autenticación """
     return render(request, 'home.html')
 
 @login_required(login_url='login')
 def perfil_view(request):
-    """ Muestra el perfil actual y procesa la actualización de datos con subida de archivos """
+    """ Muestra la información personal y procesa los cambios de datos de la cuenta """
     usuario = request.user
     
     if request.method == 'POST':
@@ -142,7 +148,7 @@ def perfil_view(request):
         if form.is_valid():
             form.save()
             messages.success(request, "¡Tu perfil ha sido actualizado con éxito!")
-            return redirect('perfil')
+            return redirect('perfil') 
     else:
         form = EditarPerfilForm(instance=usuario)
         
@@ -151,24 +157,3 @@ def perfil_view(request):
         'usuario': usuario
     }
     return render(request, 'perfil.html', context)
-
-@login_required(login_url='login')
-@never_cache
-def editar_perfil_view(request):
-    """ Endpoint asíncrono secundario para actualizaciones rápidas vía AJAX """
-    if request.method == "POST" and request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        form = UserEditForm(request.POST, instance=request.user)
-        if form.is_valid():
-            form.save()
-            return JsonResponse({
-                'status': 'success', 
-                'message': '¡Tu información de perfil ha sido actualizada con éxito!'
-            })
-        else:
-            error_msg = "Error en los datos."
-            for field, errors in form.errors.items():
-                error_msg = errors[0]
-                break
-            return JsonResponse({'status': 'error', 'message': error_msg}, status=400)
-            
-    return JsonResponse({'status': 'error', 'message': 'Petición no permitida.'}, status=400)
