@@ -14,32 +14,15 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
 from core import views
 
-# ==========================================
-# # SECCIÓN: RUTAS GLOBALES DEL SISTEMA (URLS)
-# ==========================================
 urlpatterns = [
-    # 🛡️ Extensión nativa del panel de administración de Superusuario
-    path('admin/', admin.site.urls),
-
-    # ==========================================
-    # # SECCIÓN: AUTENTICACIÓN Y SESIONES (SPA)
-    # ==========================================
     path('', views.inicio, name='inicio'),
+    path('home/', views.home, name='home'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('register/', views.register_view, name='register'),
-
-    # ==========================================
-    # # SECCIÓN: VISTAS DE USUARIOS Y PERFILES
-    # ==========================================
-    path('home/', views.home, name='home'),
     path('perfil/', views.perfil_view, name='perfil'),
-    path('perfil/editar/', views.editar_profile_view if hasattr(views, 'editar_profile_view') else views.editar_perfil_view, name='editar_perfil'),
-    
-    # Ruta personalizada para tu propio panel de control de administrador en el menú superior
-    path('control/', views.admin_panel_view, name='admin_panel'),
+    path('admin-panel/', views.admin_panel_view, name='admin_panel'),
 ]
