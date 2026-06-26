@@ -40,7 +40,36 @@ La seguridad es el pilar fundamental de **SafeZone**. Se implementaron controles
 * **Aislamiento por Variables de Entorno:** Uso de `os.environ.get()` en `settings.py` para asegurar que las credenciales de producción de MySQL (`DB_PASSWORD`, `DB_HOST`) no queden expuestas en el código fuente.
 
 ---
+## 🔡 Validaciones mediante Expresiones Regulares (RegEx)
 
+Para asegurar la integridad de los datos en la capa de negocio (`forms.py` y `views.py`) antes de interactuar con la base de datos MySQL, se aplican patrones de expresiones regulares estrictos:
+
+### 1. Validación y Autenticación de Correo Electrónico
+Para identificar si el usuario está intentando iniciar sesión con su correo o con su nombre de usuario, el sistema evalúa la presencia del símbolo `@` mediante un patrón de coincidencia estándar, permitiendo además estructurar la verificación del registro:
+
+* **Expresión Regular:** `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+* **Explicación del patrón:**
+  * `^[a-zA-Z0-9._%+-]+`: Coincide con el nombre de usuario del correo (letras, números y caracteres permitidos como puntos o guiones).
+  * `@`: Obliga la presencia exacta del símbolo arroba.
+  * `[a-zA-Z0-9.-]+`: Valida el nombre del dominio (ej. `gmail`, `outlook`).
+  * `\.[a-zA-Z]{2,}$`: Asegura que el dominio termine en un punto seguido de una extensión válida de mínimo 2 caracteres (ej. `.com`, `.co`, `.edu`).
+
+### 2. Restricción de Nombre de Usuario (Username Security)
+El framework de Django aplica por defecto una expresión regular sobre el campo `username` para evitar la inyección de caracteres especiales o scripts maliciosos en las URL y plantillas:
+
+* **Expresión Regular:** `^[\w.@+-]+$`
+* **Explicación del patrón:**
+  * `^` y `$`: Alfanuméricos de principio a fin, evitando saltos de línea ocultos.
+  * `[\w.@+-]`: Restringe los caracteres permitidos únicamente a letras (a-z, A-Z), números (0-9), guiones bajos (`_`), puntos (`.`), arrobas (`@`), signos de más (`+`) y guiones medios (`-`).
+
+### 3. Fortaleza de Contraseñas (Password Policies)
+En la capa de seguridad de contraseñas, Django utiliza internamente validadores que pueden representarse con la siguiente RegEx de complejidad para forzar credenciales seguras:
+
+* **Expresión Regular (Recomendada para producción):** `^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$`
+* **Explicación del patrón:**
+  * `(?=.*[A-Za-z])`: Requiere al menos una letra.
+  * `(?=.*\d)`: Requiere al menos un número.
+  * `{8,}`: Define una longitud mínima estricta de 8 caracteres.
 ## 🚀 Requisitos e Instalación con Docker
 
 ### Requisitos Previos:
